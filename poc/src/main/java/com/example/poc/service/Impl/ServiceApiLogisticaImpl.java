@@ -1,18 +1,19 @@
 package com.example.poc.service.Impl;
 
+import com.example.poc.dto.Pedido;
 import com.example.poc.dto.Produto;
 import com.example.poc.service.ServiceApiLogistica;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class ServiceApiLogisticaImpl implements ServiceApiLogistica {
-    private static final String BASE_URL_CONSULTA_DISP = "https://camunda-lab-get-order.azurewebsites.net/api/stock/xpto123?code=HrUq2PXFE9DcoNVi5w8zsieOEFtRT3T7Fsp3CfZvsOu5AzFuKy5yBg%3D%3D";
+    private static final String BASE_URL_CONSULTA_DISP = "";
+
+    private static final String BASE_URL_ATUALIZA_ESTOQUE= "";
+
+    private static final String BASE_URL_SOLICITA_PEDIDO= "";
 
     private RestTemplate restTemplate = null;
 
@@ -21,22 +22,44 @@ public class ServiceApiLogisticaImpl implements ServiceApiLogistica {
     }
 
     @Override
-    public Produto ConsultaDisponibilidade(String productId) {
+    public Produto consultaDisponibilidade(String productId) {
         String url = BASE_URL_CONSULTA_DISP;
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("code", "HrUq2PXFE9DcoNVi5w8zsieOEFtRT3T7Fsp3CfZvsOu5AzFuKy5yBg%3D%3D");
-
         try {
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class, headers);
+            ResponseEntity<Produto> response = restTemplate.getForEntity(url, Produto.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                return new Produto(){ };
+                return response.getBody();
             } else {
                 throw new RuntimeException("Unexpected HTTP status: " + response.getStatusCode());
             }
         } catch (RestClientException e) {
             throw new RuntimeException("API call failed: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void atualizaEstoque(Produto produto) {
+        String url = BASE_URL_ATUALIZA_ESTOQUE;
+        try {
+            ResponseEntity<HttpStatus> response = restTemplate.postForEntity(url, produto, HttpStatus.class);
+        } catch (RestClientException e) {
+            throw new RuntimeException("API call failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void solicitaEntregaPedido(Pedido pedido) {
+        String url = BASE_URL_SOLICITA_PEDIDO;
+        try {
+            ResponseEntity<HttpStatus> response = restTemplate.postForEntity(url, pedido, HttpStatus.class);
+        } catch (RestClientException e) {
+            throw new RuntimeException("API call failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Pedido solicitaResultadoEntrega() {
+        return null;
     }
 }
